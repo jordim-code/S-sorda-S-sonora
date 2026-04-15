@@ -188,8 +188,3 @@ const ACTIVITAT_2 = [
     correcta: 1
   }
 ];
-
-const PREGUNTES = [
-  ...ACTIVITAT_1,
-  ...ACTIVITAT_2
-];
