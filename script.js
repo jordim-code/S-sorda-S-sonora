@@ -27,8 +27,13 @@ const checkDragBtn = document.getElementById("check-drag-btn");
 const finalNameEl = document.getElementById("final-name");
 const finalScoreEl = document.getElementById("final-score");
 const finalCorrectEl = document.getElementById("final-correct");
+const finalErrorsEl = document.getElementById("final-errors");
 const finalBestStreakEl = document.getElementById("final-best-streak");
 const finalMessageEl = document.getElementById("final-message");
+
+const finalScoreRowEl = document.getElementById("final-score-row");
+const finalErrorsRowEl = document.getElementById("final-errors-row");
+const finalBestStreakRowEl = document.getElementById("final-best-streak-row");
 
 const VIDES_INICIALS = 3;
 const TEMPS_PER_PREGUNTA = 30;
@@ -37,12 +42,14 @@ const BONUS_RATXA = 10;
 
 let playerName = "";
 let preguntesActives = [];
+let activitatActual = "1";
 let currentQuestionIndex = 0;
 let score = 0;
 let lives = VIDES_INICIALS;
 let streak = 0;
 let bestStreak = 0;
 let correctAnswers = 0;
+let errorsCount = 0;
 let timer = null;
 let timeLeft = TEMPS_PER_PREGUNTA;
 let bloquejat = false;
@@ -78,6 +85,16 @@ function actualitzarHUD() {
   progressFillEl.style.width = `${(currentQuestionIndex / preguntesActives.length) * 100}%`;
 }
 
+function actualitzarVisibilitatHUD() {
+  if (activitatActual === "1") {
+    scoreEl.parentElement.style.display = "none";
+    streakEl.parentElement.style.display = "none";
+  } else {
+    scoreEl.parentElement.style.display = "block";
+    streakEl.parentElement.style.display = "block";
+  }
+}
+
 function iniciarPartida() {
   playerName = playerNameInput.value.trim();
 
@@ -86,9 +103,9 @@ function iniciarPartida() {
     return;
   }
 
-  const activitat = obtenirActivitatSeleccionada();
+  activitatActual = obtenirActivitatSeleccionada();
 
-  if (activitat === "1") {
+  if (activitatActual === "1") {
     preguntesActives = barrejaArray(ACTIVITAT_1);
   } else {
     preguntesActives = barrejaArray(ACTIVITAT_2);
@@ -100,9 +117,11 @@ function iniciarPartida() {
   streak = 0;
   bestStreak = 0;
   correctAnswers = 0;
+  errorsCount = 0;
   bloquejat = false;
   draggedElement = null;
 
+  actualitzarVisibilitatHUD();
   mostrarPantalla(gameScreen);
   carregarPregunta();
 }
@@ -331,6 +350,7 @@ function gestionarRespostaCorrecta(text) {
 function gestionarRespostaIncorrecta(text, avancarDirecte = true) {
   lives--;
   streak = 0;
+  errorsCount++;
 
   feedbackEl.textContent = text;
   feedbackEl.className = "feedback error";
@@ -389,11 +409,24 @@ function acabarPartida() {
 
   mostrarPantalla(endScreen);
 
+  const totalPreguntes = preguntesActives.length;
+
   finalNameEl.textContent = playerName;
-  finalScoreEl.textContent = score;
-  finalCorrectEl.textContent = `${correctAnswers} de ${preguntesActives.length}`;
-  finalBestStreakEl.textContent = bestStreak;
+  finalCorrectEl.textContent = `${correctAnswers} de ${totalPreguntes}`;
+  finalErrorsEl.textContent = errorsCount;
   finalMessageEl.textContent = obtenirMissatgeFinal();
+
+  if (activitatActual === "1") {
+    finalScoreRowEl.style.display = "none";
+    finalBestStreakRowEl.style.display = "none";
+    finalErrorsRowEl.style.display = "block";
+  } else {
+    finalScoreRowEl.style.display = "block";
+    finalBestStreakRowEl.style.display = "block";
+    finalErrorsRowEl.style.display = "block";
+    finalScoreEl.textContent = score;
+    finalBestStreakEl.textContent = bestStreak;
+  }
 
   progressFillEl.style.width = "100%";
 }
