@@ -11,13 +11,33 @@
 
     <!-- Pantalla inicial -->
     <section id="start-screen" class="screen active">
-      <div class="card">
+      <div class="card start-card">
         <h1>Repte de la S</h1>
-        <p class="subtitle">Qüestionari sobre la S sorda i la S sonora</p>
+        <p class="subtitle">Joc interactiu sobre la S sorda i la S sonora</p>
 
         <div class="input-group">
           <label for="player-name">Escriu el teu nom</label>
           <input type="text" id="player-name" maxlength="20" placeholder="Nom del jugador/a" />
+        </div>
+
+        <div class="activity-select">
+          <h2>Tria una activitat</h2>
+
+          <label class="activity-option">
+            <input type="radio" name="activity" value="1" checked />
+            <div class="activity-box">
+              <strong>Activitat 1</strong>
+              <span>Arrossega les paraules cap a S sonora o S sorda</span>
+            </div>
+          </label>
+
+          <label class="activity-option">
+            <input type="radio" name="activity" value="2" />
+            <div class="activity-box">
+              <strong>Activitat 2</strong>
+              <span>Tria quina de les dues opcions és la correcta</span>
+            </div>
+          </label>
         </div>
 
         <div class="instructions">
@@ -61,7 +81,7 @@
 
           <div id="drag-area" class="drag-area hidden">
             <div class="drag-columns">
-              <div class="drop-zone" data-zone="sonora">
+              <div class="drop-zone sonora-zone-box">
                 <h3>S sonora</h3>
                 <div id="sonora-zone" class="drop-list"></div>
               </div>
@@ -71,7 +91,7 @@
                 <div id="word-bank" class="word-bank"></div>
               </div>
 
-              <div class="drop-zone" data-zone="sorda">
+              <div class="drop-zone sorda-zone-box">
                 <h3>S sorda</h3>
                 <div id="sorda-zone" class="drop-list"></div>
               </div>
@@ -91,7 +111,7 @@
 
     <!-- Pantalla final -->
     <section id="end-screen" class="screen">
-      <div class="card">
+      <div class="card end-card">
         <h1>Partida acabada</h1>
         <p class="subtitle">Resultat final del qüestionari</p>
 
