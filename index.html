@@ -9,7 +9,6 @@
 <body>
   <div class="app">
 
-    <!-- Pantalla inicial -->
     <section id="start-screen" class="screen active">
       <div class="card start-card">
         <h1>Repte de la S</h1>
@@ -38,16 +37,23 @@
               <span>Tria quina de les dues opcions és la correcta</span>
             </div>
           </label>
+
+          <label class="activity-option">
+            <input type="radio" name="activity" value="3" />
+            <div class="activity-box">
+              <strong>Activitat 3</strong>
+              <span>Dictat de frases amb àudio i autocorrecció</span>
+            </div>
+          </label>
         </div>
 
         <div class="instructions">
           <h2>Com es juga?</h2>
           <ul>
-            <li>Comences amb <strong>3 vides</strong>.</li>
-            <li>Tens <strong>30 segons</strong> per respondre cada pregunta.</li>
-            <li>Cada encert suma <strong>10 punts</strong>.</li>
-            <li>Cada <strong>3 encerts seguits</strong> guanyes un bonus de ratxa.</li>
-            <li>Si falles o se t’acaba el temps, perds una vida.</li>
+            <li>Comences amb <strong>3 vides</strong> a les activitats 1 i 2.</li>
+            <li>A l’activitat 3 tens <strong>3 intents</strong> per frase.</li>
+            <li>Si no superes una frase del dictat en 3 intents, tornes a l’inici del joc.</li>
+            <li>A l’activitat 3, els accents no compten com a error, però la puntuació sí.</li>
           </ul>
         </div>
 
@@ -55,14 +61,14 @@
       </div>
     </section>
 
-    <!-- Pantalla de joc -->
     <section id="game-screen" class="screen">
       <div class="top-bar">
         <div class="status-box">Jugador/a: <span id="display-name">---</span></div>
-        <div class="status-box">Punts: <span id="score">0</span></div>
-        <div class="status-box">Ratxa: <span id="streak">0</span></div>
-        <div class="status-box">Vides: <span id="lives">❤️❤️❤️</span></div>
-        <div class="status-box time-box">Temps: <span id="time">30</span>s</div>
+        <div id="score-box" class="status-box">Punts: <span id="score">0</span></div>
+        <div id="streak-box" class="status-box">Ratxa: <span id="streak">0</span></div>
+        <div id="lives-box" class="status-box">Vides: <span id="lives">❤️❤️❤️</span></div>
+        <div id="time-box" class="status-box time-box">Temps: <span id="time">30</span>s</div>
+        <div id="attempt-box" class="status-box hidden">Intent: <span id="attempt-number">1</span>/3</div>
       </div>
 
       <div class="progress-wrap">
@@ -103,17 +109,40 @@
               <button id="check-drag-btn" class="btn primary">Comprovar</button>
             </div>
           </div>
+
+          <div id="dictation-area" class="dictation-area hidden">
+            <div class="dictation-controls">
+              <button id="play-audio-btn" class="btn primary" type="button">Escolta l’àudio</button>
+            </div>
+
+            <div class="input-group">
+              <label for="dictation-input">Escriu la frase que has sentit</label>
+              <textarea id="dictation-input" rows="4" placeholder="Escriu aquí la frase..."></textarea>
+            </div>
+
+            <div class="dictation-actions">
+              <button id="check-dictation-btn" class="btn primary" type="button">Comprovar</button>
+            </div>
+
+            <div id="dictation-meta" class="dictation-meta hidden">
+              <p><strong>Errors:</strong> <span id="dictation-errors">0</span></p>
+            </div>
+
+            <div id="dictation-feedback" class="dictation-feedback hidden">
+              <h3>Revisió de la teva frase</h3>
+              <div id="dictation-correction" class="dictation-correction"></div>
+            </div>
+          </div>
         </div>
 
         <p id="feedback" class="feedback"></p>
       </div>
     </section>
 
-    <!-- Pantalla final -->
     <section id="end-screen" class="screen">
       <div class="card end-card">
         <h1>Partida acabada</h1>
-        <p class="subtitle">Resultat final del qüestionari</p>
+        <p class="subtitle">Resultat final</p>
 
         <div class="results">
           <p><strong>Nom:</strong> <span id="final-name"></span></p>
