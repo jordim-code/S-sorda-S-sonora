@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="ca">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Repte de la S</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="app">
+
+    <!-- Pantalla inicial -->
+    <section id="start-screen" class="screen active">
+      <div class="card">
+        <h1>Repte de la S</h1>
+        <p class="subtitle">Qüestionari sobre la S sorda i la S sonora</p>
+
+        <div class="input-group">
+          <label for="player-name">Escriu el teu nom</label>
+          <input type="text" id="player-name" maxlength="20" placeholder="Nom del jugador/a" />
+        </div>
+
+        <div class="instructions">
+          <h2>Com es juga?</h2>
+          <ul>
+            <li>Comences amb <strong>3 vides</strong>.</li>
+            <li>Tens <strong>30 segons</strong> per respondre cada pregunta.</li>
+            <li>Cada encert suma <strong>10 punts</strong>.</li>
+            <li>Cada <strong>3 encerts seguits</strong> guanyes un bonus de ratxa.</li>
+            <li>Si falles o se t’acaba el temps, perds una vida.</li>
+          </ul>
+        </div>
+
+        <button id="start-btn" class="btn primary">Començar</button>
+      </div>
+    </section>
+
+    <!-- Pantalla de joc -->
+    <section id="game-screen" class="screen">
+      <div class="top-bar">
+        <div class="status-box">Jugador/a: <span id="display-name">---</span></div>
+        <div class="status-box">Punts: <span id="score">0</span></div>
+        <div class="status-box">Ratxa: <span id="streak">0</span></div>
+        <div class="status-box">Vides: <span id="lives">❤️❤️❤️</span></div>
+        <div class="status-box time-box">Temps: <span id="time">30</span>s</div>
+      </div>
+
+      <div class="progress-wrap">
+        <div id="progress-text">Pregunta 1 de 10</div>
+        <div class="progress-bar">
+          <div id="progress-fill"></div>
+        </div>
+      </div>
+
+      <div class="card game-card">
+        <p id="question-category" class="category"></p>
+        <h2 id="question-text">Pregunta</h2>
+
+        <div id="question-content">
+          <div id="answers" class="answers"></div>
+
+          <div id="drag-area" class="drag-area hidden">
+            <div class="drag-columns">
+              <div class="drop-zone" data-zone="sonora">
+                <h3>S sonora</h3>
+                <div id="sonora-zone" class="drop-list"></div>
+              </div>
+
+              <div class="word-bank-wrap">
+                <h3>Paraules</h3>
+                <div id="word-bank" class="word-bank"></div>
+              </div>
+
+              <div class="drop-zone" data-zone="sorda">
+                <h3>S sorda</h3>
+                <div id="sorda-zone" class="drop-list"></div>
+              </div>
+            </div>
+
+            <p class="drag-tip">Arrossega totes les paraules al grup correcte i després prem “Comprovar”.</p>
+
+            <div class="drag-actions">
+              <button id="check-drag-btn" class="btn primary">Comprovar</button>
+            </div>
+          </div>
+        </div>
+
+        <p id="feedback" class="feedback"></p>
+      </div>
+    </section>
+
+    <!-- Pantalla final -->
+    <section id="end-screen" class="screen">
+      <div class="card">
+        <h1>Partida acabada</h1>
+        <p class="subtitle">Resultat final del qüestionari</p>
+
+        <div class="results">
+          <p><strong>Nom:</strong> <span id="final-name"></span></p>
+          <p><strong>Puntuació:</strong> <span id="final-score"></span></p>
+          <p><strong>Encerts:</strong> <span id="final-correct"></span></p>
+          <p><strong>Millor ratxa:</strong> <span id="final-best-streak"></span></p>
+        </div>
+
+        <div class="final-message-box">
+          <h2>Valoració</h2>
+          <p id="final-message"></p>
+        </div>
+
+        <button id="restart-btn" class="btn primary">Tornar a jugar</button>
+      </div>
+    </section>
+  </div>
+
+  <script src="preguntes.js"></script>
+  <script src="script.js"></script>
+</body>
+</html>
