@@ -36,7 +36,7 @@ const PUNTS_PER_ENCERT = 10;
 const BONUS_RATXA = 10;
 
 let playerName = "";
-let preguntesBarrejades = [];
+let preguntesActives = [];
 let currentQuestionIndex = 0;
 let score = 0;
 let lives = VIDES_INICIALS;
@@ -46,7 +46,7 @@ let correctAnswers = 0;
 let timer = null;
 let timeLeft = TEMPS_PER_PREGUNTA;
 let bloquejat = false;
-let draggedWordId = null;
+let draggedElement = null;
 
 function barrejaArray(array) {
   const copia = [...array];
@@ -55,6 +55,11 @@ function barrejaArray(array) {
     [copia[i], copia[j]] = [copia[j], copia[i]];
   }
   return copia;
+}
+
+function obtenirActivitatSeleccionada() {
+  const seleccionada = document.querySelector('input[name="activity"]:checked');
+  return seleccionada ? seleccionada.value : "1";
 }
 
 function mostrarPantalla(screen) {
@@ -69,8 +74,8 @@ function actualitzarHUD() {
   scoreEl.textContent = score;
   streakEl.textContent = streak;
   livesEl.textContent = "❤️".repeat(lives) + "🖤".repeat(VIDES_INICIALS - lives);
-  progressTextEl.textContent = `Pregunta ${currentQuestionIndex + 1} de ${preguntesBarrejades.length}`;
-  progressFillEl.style.width = `${(currentQuestionIndex / preguntesBarrejades.length) * 100}%`;
+  progressTextEl.textContent = `Pregunta ${currentQuestionIndex + 1} de ${preguntesActives.length}`;
+  progressFillEl.style.width = `${(currentQuestionIndex / preguntesActives.length) * 100}%`;
 }
 
 function iniciarPartida() {
@@ -81,7 +86,14 @@ function iniciarPartida() {
     return;
   }
 
-  preguntesBarrejades = barrejaArray(PREGUNTES);
+  const activitat = obtenirActivitatSeleccionada();
+
+  if (activitat === "1") {
+    preguntesActives = barrejaArray(ACTIVITAT_1);
+  } else {
+    preguntesActives = barrejaArray(ACTIVITAT_2);
+  }
+
   currentQuestionIndex = 0;
   score = 0;
   lives = VIDES_INICIALS;
@@ -89,13 +101,14 @@ function iniciarPartida() {
   bestStreak = 0;
   correctAnswers = 0;
   bloquejat = false;
+  draggedElement = null;
 
   mostrarPantalla(gameScreen);
   carregarPregunta();
 }
 
 function carregarPregunta() {
-  if (currentQuestionIndex >= preguntesBarrejades.length || lives <= 0) {
+  if (currentQuestionIndex >= preguntesActives.length || lives <= 0) {
     acabarPartida();
     return;
   }
@@ -104,7 +117,7 @@ function carregarPregunta() {
   feedbackEl.textContent = "";
   feedbackEl.className = "feedback";
 
-  const preguntaActual = preguntesBarrejades[currentQuestionIndex];
+  const preguntaActual = preguntesActives[currentQuestionIndex];
 
   actualitzarHUD();
 
@@ -131,9 +144,11 @@ function renderPreguntaOpcions(preguntaActual) {
 
   preguntaActual.opcions.forEach((opcio, index) => {
     const btn = document.createElement("button");
-    btn.classList.add("answer-btn");
+    btn.className = "answer-btn";
     btn.textContent = opcio;
-    btn.addEventListener("click", () => respondreOpcions(index));
+    btn.addEventListener("click", function () {
+      respondreOpcions(index);
+    });
     answersEl.appendChild(btn);
   });
 }
@@ -146,56 +161,58 @@ function renderPreguntaArrossegar(preguntaActual) {
 
   paraulesBarrejades.forEach((paraula, index) => {
     const chip = document.createElement("div");
-    chip.classList.add("word-chip");
+    chip.className = "word-chip";
     chip.textContent = paraula;
     chip.draggable = true;
     chip.id = `word-${currentQuestionIndex}-${index}`;
     chip.dataset.word = paraula;
 
-    chip.addEventListener("dragstart", (e) => {
-      draggedWordId = chip.id;
-      e.dataTransfer.setData("text/plain", chip.id);
+    chip.addEventListener("dragstart", function () {
+      draggedElement = chip;
+    });
+
+    chip.addEventListener("dragend", function () {
+      draggedElement = null;
     });
 
     wordBankEl.appendChild(chip);
   });
 
-  configurarZonesArrossegament();
+  configurarDropZone(wordBankEl);
+  configurarDropZone(sonoraZoneEl);
+  configurarDropZone(sordaZoneEl);
 }
 
-function configurarZonesArrossegament() {
-  const contenidors = [
-    wordBankEl,
-    sonoraZoneEl,
-    sordaZoneEl
-  ];
-
-  contenidors.forEach((contenidor) => {
-    contenedorDragEvents(contenidor);
-  });
-}
-
-function contenedorDragEvents(contenidor) {
-  contenedor.addEventListener("dragover", (e) => {
+function configurarDropZone(zone) {
+  zone.ondragover = function (e) {
     e.preventDefault();
-    contenedor.parentElement.classList.add("drag-over");
-  });
+  };
 
-  contenedor.addEventListener("dragleave", () => {
-    contenedor.parentElement.classList.remove("drag-over");
-  });
-
-  contenedor.addEventListener("drop", (e) => {
+  zone.ondragenter = function (e) {
     e.preventDefault();
-    contenedor.parentElement.classList.remove("drag-over");
-
-    const id = e.dataTransfer.getData("text/plain") || draggedWordId;
-    const element = document.getElementById(id);
-
-    if (element && !bloquejat) {
-      contenedor.appendChild(element);
+    if (zone.parentElement) {
+      zone.parentElement.classList.add("drop-highlight");
     }
-  });
+  };
+
+  zone.ondragleave = function () {
+    if (zone.parentElement) {
+      zone.parentElement.classList.remove("drop-highlight");
+    }
+  };
+
+  zone.ondrop = function (e) {
+    e.preventDefault();
+
+    if (zone.parentElement) {
+      zone.parentElement.classList.remove("drop-highlight");
+    }
+
+    if (bloquejat) return;
+    if (!draggedElement) return;
+
+    zone.appendChild(draggedElement);
+  };
 }
 
 function iniciarTemporitzador() {
@@ -203,7 +220,7 @@ function iniciarTemporitzador() {
   timeLeft = TEMPS_PER_PREGUNTA;
   timeEl.textContent = timeLeft;
 
-  timer = setInterval(() => {
+  timer = setInterval(function () {
     timeLeft--;
     timeEl.textContent = timeLeft;
 
@@ -220,10 +237,10 @@ function respondreOpcions(indexSeleccionat) {
 
   clearInterval(timer);
 
-  const preguntaActual = preguntesBarrejades[currentQuestionIndex];
+  const preguntaActual = preguntesActives[currentQuestionIndex];
   const botonsResposta = document.querySelectorAll(".answer-btn");
 
-  botonsResposta.forEach((btn, index) => {
+  botonsResposta.forEach(function (btn, index) {
     btn.disabled = true;
     if (index === preguntaActual.correcta) {
       btn.classList.add("correct");
@@ -233,7 +250,9 @@ function respondreOpcions(indexSeleccionat) {
   if (indexSeleccionat === preguntaActual.correcta) {
     gestionarRespostaCorrecta("Correcte! +10 punts.");
   } else {
-    botonsResposta[indexSeleccionat].classList.add("incorrect");
+    if (botonsResposta[indexSeleccionat]) {
+      botonsResposta[indexSeleccionat].classList.add("incorrect");
+    }
     gestionarRespostaIncorrecta("Incorrecte. Perds una vida.");
   }
 }
@@ -244,48 +263,42 @@ function comprovarArrossegar() {
 
   clearInterval(timer);
 
-  const preguntaActual = preguntesBarrejades[currentQuestionIndex];
+  const preguntaActual = preguntesActives[currentQuestionIndex];
+  const totsElsChips = document.querySelectorAll(".word-chip");
 
-  const sonoraUsuari = [...sonoraZoneEl.querySelectorAll(".word-chip")].map(el => el.dataset.word);
-  const sordaUsuari = [...sordaZoneEl.querySelectorAll(".word-chip")].map(el => el.dataset.word);
-  const bancUsuari = [...wordBankEl.querySelectorAll(".word-chip")].map(el => el.dataset.word);
+  let totCorrecte = true;
 
-  const totesColocades = bancUsuari.length === 0;
+  totsElsChips.forEach(function (chip) {
+    chip.draggable = false;
+    chip.classList.add("locked");
+    chip.classList.remove("correct-placement", "wrong-placement");
 
-  const sonoraCorrecta =
-    sonoraUsuari.length === preguntaActual.s_sonora.length &&
-    preguntaActual.s_sonora.every(paraula => sonoraUsuari.includes(paraula));
+    const paraula = chip.dataset.word;
+    const pare = chip.parentElement;
 
-  const sordaCorrecta =
-    sordaUsuari.length === preguntaActual.s_sorda.length &&
-    preguntaActual.s_sorda.every(paraula => sordaUsuari.includes(paraula));
+    const hauriaAnarSonora = preguntaActual.s_sonora.includes(paraula);
+    const hauriaAnarSorda = preguntaActual.s_sorda.includes(paraula);
 
-  if (totesColocades && sonoraCorrecta && sordaCorrecta) {
+    const estaSonora = pare === sonoraZoneEl;
+    const estaSorda = pare === sordaZoneEl;
+
+    const correcte =
+      (hauriaAnarSonora && estaSonora) ||
+      (hauriaAnarSorda && estaSorda);
+
+    if (correcte) {
+      chip.classList.add("correct-placement");
+    } else {
+      chip.classList.add("wrong-placement");
+      totCorrecte = false;
+    }
+  });
+
+  if (totCorrecte) {
     gestionarRespostaCorrecta("Molt bé! Has classificat totes les paraules correctament.");
   } else {
-    mostrarCorreccioArrossegar(preguntaActual);
-    gestionarRespostaIncorrecta("Hi ha alguna paraula mal col·locada. Ara pots veure la classificació correcta. Perds una vida.", false);
+    gestionarRespostaIncorrecta("Hi ha paraules mal col·locades o sense col·locar. Les incorrectes estan marcades en vermell.", false);
   }
-}
-
-function mostrarCorreccioArrossegar(preguntaActual) {
-  wordBankEl.innerHTML = "";
-  sonoraZoneEl.innerHTML = "";
-  sordaZoneEl.innerHTML = "";
-
-  preguntaActual.s_sonora.forEach((paraula) => {
-    const chip = document.createElement("div");
-    chip.classList.add("word-chip", "locked", "correct-sonora");
-    chip.textContent = paraula;
-    sonoraZoneEl.appendChild(chip);
-  });
-
-  preguntaActual.s_sorda.forEach((paraula) => {
-    const chip = document.createElement("div");
-    chip.classList.add("word-chip", "locked", "correct-sorda");
-    chip.textContent = paraula;
-    sordaZoneEl.appendChild(chip);
-  });
 }
 
 function gestionarRespostaCorrecta(text) {
@@ -309,13 +322,13 @@ function gestionarRespostaCorrecta(text) {
 
   actualitzarHUD();
 
-  setTimeout(() => {
+  setTimeout(function () {
     currentQuestionIndex++;
     carregarPregunta();
   }, 2200);
 }
 
-function gestionarRespostaIncorrecta(text, avançarDirecte = true) {
+function gestionarRespostaIncorrecta(text, avancarDirecte = true) {
   lives--;
   streak = 0;
 
@@ -324,36 +337,40 @@ function gestionarRespostaIncorrecta(text, avançarDirecte = true) {
 
   actualitzarHUD();
 
-  setTimeout(() => {
+  setTimeout(function () {
     currentQuestionIndex++;
     carregarPregunta();
-  }, avançarDirecte ? 1800 : 2400);
+  }, avancarDirecte ? 1800 : 2600);
 }
 
 function tempsEsgotat() {
   if (bloquejat) return;
   bloquejat = true;
 
-  const preguntaActual = preguntesBarrejades[currentQuestionIndex];
+  const preguntaActual = preguntesActives[currentQuestionIndex];
 
   if (preguntaActual.tipus === "opcions") {
     const botonsResposta = document.querySelectorAll(".answer-btn");
 
-    botonsResposta.forEach((btn, index) => {
+    botonsResposta.forEach(function (btn, index) {
       btn.disabled = true;
       if (index === preguntaActual.correcta) {
         btn.classList.add("correct");
       }
     });
   } else if (preguntaActual.tipus === "arrossegar") {
-    mostrarCorreccioArrossegar(preguntaActual);
+    const totsElsChips = document.querySelectorAll(".word-chip");
+    totsElsChips.forEach(function (chip) {
+      chip.draggable = false;
+      chip.classList.add("locked", "wrong-placement");
+    });
   }
 
   gestionarRespostaIncorrecta("S'ha acabat el temps. Perds una vida.");
 }
 
 function obtenirMissatgeFinal() {
-  const total = preguntesBarrejades.length;
+  const total = preguntesActives.length;
   const percentatge = total > 0 ? (correctAnswers / total) * 100 : 0;
 
   if (percentatge >= 80) {
@@ -374,7 +391,7 @@ function acabarPartida() {
 
   finalNameEl.textContent = playerName;
   finalScoreEl.textContent = score;
-  finalCorrectEl.textContent = `${correctAnswers} de ${preguntesBarrejades.length}`;
+  finalCorrectEl.textContent = `${correctAnswers} de ${preguntesActives.length}`;
   finalBestStreakEl.textContent = bestStreak;
   finalMessageEl.textContent = obtenirMissatgeFinal();
 
@@ -383,7 +400,7 @@ function acabarPartida() {
 
 startBtn.addEventListener("click", iniciarPartida);
 
-restartBtn.addEventListener("click", () => {
+restartBtn.addEventListener("click", function () {
   playerNameInput.value = "";
   mostrarPantalla(startScreen);
 });
