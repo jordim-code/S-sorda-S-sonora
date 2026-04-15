@@ -189,7 +189,39 @@ const ACTIVITAT_2 = [
   }
 ];
 
+const ACTIVITAT_3 = [
+  {
+    tipus: "dictat",
+    categoria: "Dictat de frases",
+    pregunta: "Escolta l’àudio i escriu la frase exacta.",
+    frase: "A la plaça hi ha onze cases de pisos.",
+    audio: "frase1.mp3"
+  },
+  {
+    tipus: "dictat",
+    categoria: "Dictat de frases",
+    pregunta: "Escolta l’àudio i escriu la frase exacta.",
+    frase: "Dissabte farem arròs a la cassola amb pèsols i trossets de conill.",
+    audio: "frase2.mp3"
+  },
+  {
+    tipus: "dictat",
+    categoria: "Dictat de frases",
+    pregunta: "Escolta l’àudio i escriu la frase exacta.",
+    frase: "L'Ignasi pensa passar les vacances a França.",
+    audio: "frase3.mp3"
+  },
+  {
+    tipus: "dictat",
+    categoria: "Dictat de frases",
+    pregunta: "Escolta l’àudio i escriu la frase exacta.",
+    frase: "Aquestes panses són massa dolces.",
+    audio: "frase4.mp3"
+  }
+];
+
 const PREGUNTES = [
   ...ACTIVITAT_1,
-  ...ACTIVITAT_2
+  ...ACTIVITAT_2,
+  ...ACTIVITAT_3
 ];
