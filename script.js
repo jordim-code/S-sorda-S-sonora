@@ -11,6 +11,8 @@ const scoreEl = document.getElementById("score");
 const streakEl = document.getElementById("streak");
 const livesEl = document.getElementById("lives");
 const timeEl = document.getElementById("time");
+const attemptNumberEl = document.getElementById("attempt-number");
+
 const questionCategoryEl = document.getElementById("question-category");
 const questionTextEl = document.getElementById("question-text");
 const answersEl = document.getElementById("answers");
@@ -18,11 +20,26 @@ const feedbackEl = document.getElementById("feedback");
 const progressTextEl = document.getElementById("progress-text");
 const progressFillEl = document.getElementById("progress-fill");
 
+const scoreBoxEl = document.getElementById("score-box");
+const streakBoxEl = document.getElementById("streak-box");
+const livesBoxEl = document.getElementById("lives-box");
+const timeBoxEl = document.getElementById("time-box");
+const attemptBoxEl = document.getElementById("attempt-box");
+
 const dragAreaEl = document.getElementById("drag-area");
 const wordBankEl = document.getElementById("word-bank");
 const sonoraZoneEl = document.getElementById("sonora-zone");
 const sordaZoneEl = document.getElementById("sorda-zone");
 const checkDragBtn = document.getElementById("check-drag-btn");
+
+const dictationAreaEl = document.getElementById("dictation-area");
+const dictationInputEl = document.getElementById("dictation-input");
+const playAudioBtn = document.getElementById("play-audio-btn");
+const checkDictationBtn = document.getElementById("check-dictation-btn");
+const dictationMetaEl = document.getElementById("dictation-meta");
+const dictationErrorsEl = document.getElementById("dictation-errors");
+const dictationFeedbackEl = document.getElementById("dictation-feedback");
+const dictationCorrectionEl = document.getElementById("dictation-correction");
 
 const finalNameEl = document.getElementById("final-name");
 const finalScoreEl = document.getElementById("final-score");
@@ -39,6 +56,7 @@ const VIDES_INICIALS = 3;
 const TEMPS_PER_PREGUNTA = 30;
 const PUNTS_PER_ENCERT = 10;
 const BONUS_RATXA = 10;
+const MAX_INTENTS_DICTAT = 3;
 
 let playerName = "";
 let preguntesActives = [];
@@ -54,6 +72,9 @@ let timer = null;
 let timeLeft = TEMPS_PER_PREGUNTA;
 let bloquejat = false;
 let draggedElement = null;
+
+let dictationAttempt = 1;
+let currentAudio = null;
 
 function barrejaArray(array) {
   const copia = [...array];
@@ -83,15 +104,29 @@ function actualitzarHUD() {
   livesEl.textContent = "❤️".repeat(lives) + "🖤".repeat(VIDES_INICIALS - lives);
   progressTextEl.textContent = `Pregunta ${currentQuestionIndex + 1} de ${preguntesActives.length}`;
   progressFillEl.style.width = `${(currentQuestionIndex / preguntesActives.length) * 100}%`;
+  attemptNumberEl.textContent = dictationAttempt;
+  timeEl.textContent = timeLeft;
 }
 
 function actualitzarVisibilitatHUD() {
   if (activitatActual === "1") {
-    scoreEl.parentElement.style.display = "none";
-    streakEl.parentElement.style.display = "none";
+    scoreBoxEl.classList.add("hidden");
+    streakBoxEl.classList.add("hidden");
+    livesBoxEl.classList.remove("hidden");
+    timeBoxEl.classList.remove("hidden");
+    attemptBoxEl.classList.add("hidden");
+  } else if (activitatActual === "2") {
+    scoreBoxEl.classList.remove("hidden");
+    streakBoxEl.classList.remove("hidden");
+    livesBoxEl.classList.remove("hidden");
+    timeBoxEl.classList.remove("hidden");
+    attemptBoxEl.classList.add("hidden");
   } else {
-    scoreEl.parentElement.style.display = "block";
-    streakEl.parentElement.style.display = "block";
+    scoreBoxEl.classList.add("hidden");
+    streakBoxEl.classList.add("hidden");
+    livesBoxEl.classList.add("hidden");
+    timeBoxEl.classList.add("hidden");
+    attemptBoxEl.classList.remove("hidden");
   }
 }
 
@@ -107,8 +142,10 @@ function iniciarPartida() {
 
   if (activitatActual === "1") {
     preguntesActives = barrejaArray(ACTIVITAT_1);
-  } else {
+  } else if (activitatActual === "2") {
     preguntesActives = barrejaArray(ACTIVITAT_2);
+  } else {
+    preguntesActives = [...ACTIVITAT_3];
   }
 
   currentQuestionIndex = 0;
@@ -120,6 +157,12 @@ function iniciarPartida() {
   errorsCount = 0;
   bloquejat = false;
   draggedElement = null;
+  dictationAttempt = 1;
+
+  if (currentAudio) {
+    currentAudio.pause();
+    currentAudio = null;
+  }
 
   actualitzarVisibilitatHUD();
   mostrarPantalla(gameScreen);
@@ -127,7 +170,7 @@ function iniciarPartida() {
 }
 
 function carregarPregunta() {
-  if (currentQuestionIndex >= preguntesActives.length || lives <= 0) {
+  if (currentQuestionIndex >= preguntesActives.length || (activitatActual !== "3" && lives <= 0)) {
     acabarPartida();
     return;
   }
@@ -136,29 +179,43 @@ function carregarPregunta() {
   feedbackEl.textContent = "";
   feedbackEl.className = "feedback";
 
-  const preguntaActual = preguntesActives[currentQuestionIndex];
-
-  actualitzarHUD();
-
-  questionCategoryEl.textContent = preguntaActual.categoria;
-  questionTextEl.textContent = preguntaActual.pregunta;
-
   answersEl.innerHTML = "";
   wordBankEl.innerHTML = "";
   sonoraZoneEl.innerHTML = "";
   sordaZoneEl.innerHTML = "";
 
-  if (preguntaActual.tipus === "opcions") {
-    renderPreguntaOpcions(preguntaActual);
-  } else if (preguntaActual.tipus === "arrossegar") {
-    renderPreguntaArrossegar(preguntaActual);
+  dictationInputEl.value = dictationInputEl.value;
+  dictationMetaEl.classList.add("hidden");
+  dictationFeedbackEl.classList.add("hidden");
+  dictationCorrectionEl.innerHTML = "";
+
+  const preguntaActual = preguntesActives[currentQuestionIndex];
+
+  questionCategoryEl.textContent = preguntaActual.categoria;
+  questionTextEl.textContent = preguntaActual.pregunta;
+
+  if (activitatActual === "3") {
+    dictationAttempt = 1;
+    dictationInputEl.value = "";
+    timeLeft = TEMPS_PER_PREGUNTA;
   }
 
-  iniciarTemporitzador();
+  actualitzarHUD();
+
+  if (preguntaActual.tipus === "opcions") {
+    renderPreguntaOpcions(preguntaActual);
+    iniciarTemporitzador();
+  } else if (preguntaActual.tipus === "arrossegar") {
+    renderPreguntaArrossegar(preguntaActual);
+    iniciarTemporitzador();
+  } else if (preguntaActual.tipus === "dictat") {
+    renderPreguntaDictat(preguntaActual);
+  }
 }
 
 function renderPreguntaOpcions(preguntaActual) {
   dragAreaEl.classList.add("hidden");
+  dictationAreaEl.classList.add("hidden");
   answersEl.classList.remove("hidden");
 
   preguntaActual.opcions.forEach((opcio, index) => {
@@ -174,6 +231,7 @@ function renderPreguntaOpcions(preguntaActual) {
 
 function renderPreguntaArrossegar(preguntaActual) {
   answersEl.classList.add("hidden");
+  dictationAreaEl.classList.add("hidden");
   dragAreaEl.classList.remove("hidden");
 
   const paraulesBarrejades = barrejaArray(preguntaActual.centre);
@@ -202,6 +260,19 @@ function renderPreguntaArrossegar(preguntaActual) {
   configurarDropZone(sordaZoneEl);
 }
 
+function renderPreguntaDictat(preguntaActual) {
+  answersEl.classList.add("hidden");
+  dragAreaEl.classList.add("hidden");
+  dictationAreaEl.classList.remove("hidden");
+
+  dictationMetaEl.classList.add("hidden");
+  dictationFeedbackEl.classList.add("hidden");
+  dictationCorrectionEl.innerHTML = "";
+  actualitzarHUD();
+
+  currentAudio = new Audio(preguntaActual.audio);
+}
+
 function configurarDropZone(zone) {
   zone.ondragover = function (e) {
     e.preventDefault();
@@ -227,9 +298,7 @@ function configurarDropZone(zone) {
       zone.parentElement.classList.remove("drop-highlight");
     }
 
-    if (bloquejat) return;
-    if (!draggedElement) return;
-
+    if (bloquejat || !draggedElement) return;
     zone.appendChild(draggedElement);
   };
 }
@@ -284,7 +353,6 @@ function comprovarArrossegar() {
 
   const preguntaActual = preguntesActives[currentQuestionIndex];
   const totsElsChips = document.querySelectorAll(".word-chip");
-
   let totCorrecte = true;
 
   totsElsChips.forEach(function (chip) {
@@ -318,6 +386,89 @@ function comprovarArrossegar() {
   } else {
     gestionarRespostaIncorrecta("Hi ha paraules mal col·locades o sense col·locar. Les incorrectes estan marcades en vermell.", false);
   }
+}
+
+function normalitzarAccents(text) {
+  return text.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+}
+
+function tokenitzaPerParaules(text) {
+  const net = text.trim();
+  if (!net) return [];
+  return net.split(/\s+/);
+}
+
+function comprovarDictat() {
+  const preguntaActual = preguntesActives[currentQuestionIndex];
+  const respostaUsuari = dictationInputEl.value.trim();
+  const tokensUsuari = tokenitzaPerParaules(respostaUsuari);
+  const tokensCorrectes = tokenitzaPerParaules(preguntaActual.frase);
+
+  const maxLen = Math.max(tokensUsuari.length, tokensCorrectes.length);
+  let errorsAquestIntent = 0;
+  let html = "";
+
+  for (let i = 0; i < maxLen; i++) {
+    const userToken = tokensUsuari[i] ?? "";
+    const correctToken = tokensCorrectes[i] ?? "";
+
+    const correcte =
+      userToken !== "" &&
+      correctToken !== "" &&
+      normalitzarAccents(userToken) === normalitzarAccents(correctToken);
+
+    if (correcte) {
+      html += `<span class="correction-token correct">${escapeHtml(userToken)}</span>`;
+    } else {
+      errorsAquestIntent++;
+      const textMostrar = userToken !== "" ? userToken : "∅";
+      html += `<span class="correction-token wrong">${escapeHtml(textMostrar)}</span>`;
+    }
+  }
+
+  dictationErrorsEl.textContent = errorsAquestIntent;
+  dictationCorrectionEl.innerHTML = html;
+  dictationMetaEl.classList.remove("hidden");
+  dictationFeedbackEl.classList.remove("hidden");
+
+  if (errorsAquestIntent === 0) {
+    correctAnswers++;
+    feedbackEl.textContent = "Molt bé! Has escrit la frase correctament.";
+    feedbackEl.className = "feedback ok";
+
+    setTimeout(function () {
+      currentQuestionIndex++;
+      carregarPregunta();
+    }, 1800);
+    return;
+  }
+
+  errorsCount += errorsAquestIntent;
+
+  if (dictationAttempt >= MAX_INTENTS_DICTAT) {
+    feedbackEl.textContent = "Has esgotat els 3 intents. Tornes a la pantalla inicial.";
+    feedbackEl.className = "feedback error";
+
+    setTimeout(function () {
+      tornarAInici();
+    }, 2200);
+    return;
+  }
+
+  feedbackEl.textContent = `Encara hi ha errors. Pots tornar-ho a provar. Intent ${dictationAttempt} de ${MAX_INTENTS_DICTAT}.`;
+  feedbackEl.className = "feedback error";
+
+  dictationAttempt++;
+  actualitzarHUD();
+}
+
+function escapeHtml(text) {
+  return text
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#39;");
 }
 
 function gestionarRespostaCorrecta(text) {
@@ -393,6 +544,16 @@ function obtenirMissatgeFinal() {
   const total = preguntesActives.length;
   const percentatge = total > 0 ? (correctAnswers / total) * 100 : 0;
 
+  if (activitatActual === "3") {
+    if (percentatge >= 80) {
+      return "Molt bé! Has resolt molt bé el dictat.";
+    }
+    if (percentatge >= 50) {
+      return "Bona feina! Encara pots millorar una mica més el dictat.";
+    }
+    return "Has fet un bon esforç. Et convé practicar una mica més el dictat.";
+  }
+
   if (percentatge >= 80) {
     return "Molt bé! Tens un bon domini de la S sorda i la S sonora.";
   }
@@ -407,6 +568,11 @@ function obtenirMissatgeFinal() {
 function acabarPartida() {
   clearInterval(timer);
 
+  if (currentAudio) {
+    currentAudio.pause();
+    currentAudio.currentTime = 0;
+  }
+
   mostrarPantalla(endScreen);
 
   const totalPreguntes = preguntesActives.length;
@@ -420,15 +586,34 @@ function acabarPartida() {
     finalScoreRowEl.style.display = "none";
     finalBestStreakRowEl.style.display = "none";
     finalErrorsRowEl.style.display = "block";
-  } else {
+  } else if (activitatActual === "2") {
     finalScoreRowEl.style.display = "block";
     finalBestStreakRowEl.style.display = "block";
     finalErrorsRowEl.style.display = "block";
     finalScoreEl.textContent = score;
     finalBestStreakEl.textContent = bestStreak;
+  } else {
+    finalScoreRowEl.style.display = "none";
+    finalBestStreakRowEl.style.display = "none";
+    finalErrorsRowEl.style.display = "block";
   }
 
   progressFillEl.style.width = "100%";
+}
+
+function tornarAInici() {
+  clearInterval(timer);
+
+  if (currentAudio) {
+    currentAudio.pause();
+    currentAudio.currentTime = 0;
+    currentAudio = null;
+  }
+
+  playerNameInput.value = "";
+  dictationInputEl.value = "";
+  feedbackEl.textContent = "";
+  mostrarPantalla(startScreen);
 }
 
 startBtn.addEventListener("click", iniciarPartida);
@@ -439,3 +624,16 @@ restartBtn.addEventListener("click", function () {
 });
 
 checkDragBtn.addEventListener("click", comprovarArrossegar);
+
+playAudioBtn.addEventListener("click", function () {
+  if (currentAudio) {
+    currentAudio.currentTime = 0;
+    currentAudio.play().catch(function () {
+      alert("No s'ha pogut reproduir l'àudio. Comprova que el fitxer existeix dins de la carpeta audios.");
+    });
+  }
+});
+
+checkDictationBtn.addEventListener("click", function () {
+  comprovarDictat();
+});
