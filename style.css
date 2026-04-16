@@ -99,7 +99,7 @@ h1 {
 
 .activity-option {
   display: block;
-  margin-bottom: 12px;
+  margin-bottom: 14px;
   cursor: pointer;
 }
 
@@ -108,16 +108,16 @@ h1 {
 }
 
 .activity-box {
-  border: 2px solid #d7deea;
-  border-radius: 16px;
-  padding: 16px;
-  background: linear-gradient(180deg, #ffffff, #f7fbff);
+  border-radius: 18px;
+  padding: 18px;
   transition: all 0.2s ease;
+  border: 3px solid transparent;
 }
 
 .activity-box strong {
   display: block;
   margin-bottom: 4px;
+  font-size: 1.05rem;
 }
 
 .activity-box span {
@@ -126,51 +126,48 @@ h1 {
 }
 
 .yellow-level {
-  background: linear-gradient(180deg, #fffdf2, #fff8d8);
-  border-color: #f4d03f;
-  box-shadow: 0 8px 18px rgba(244, 208, 63, 0.18);
+  background: #fff4a8 !important;
+  border-color: #e0b100 !important;
+  box-shadow: 0 8px 18px rgba(224, 177, 0, 0.28) !important;
 }
 
 .yellow-level strong {
-  color: #9a6b00;
+  color: #8a6500;
 }
 
 .orange-level {
-  background: linear-gradient(180deg, #fff8f1, #ffe3c2);
-  border-color: #f39c12;
-  box-shadow: 0 8px 18px rgba(243, 156, 18, 0.18);
+  background: #ffd39a !important;
+  border-color: #eb7a00 !important;
+  box-shadow: 0 8px 18px rgba(235, 122, 0, 0.28) !important;
 }
 
 .orange-level strong {
-  color: #b45309;
+  color: #a94e00;
 }
 
 .red-level {
-  background: linear-gradient(180deg, #fff5f5, #ffd6d6);
-  border-color: #ef4444;
-  box-shadow: 0 8px 18px rgba(239, 68, 68, 0.18);
+  background: #ffb3b3 !important;
+  border-color: #d93025 !important;
+  box-shadow: 0 8px 18px rgba(217, 48, 37, 0.28) !important;
 }
 
 .red-level strong {
-  color: #b91c1c;
+  color: #9f1d1d;
 }
 
-.activity-option input:checked + .activity-box.yellow-level {
-  border-color: #eab308;
-  box-shadow: 0 10px 24px rgba(234, 179, 8, 0.28);
-  transform: translateY(-1px);
+.activity-option input:checked + .yellow-level {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 26px rgba(224, 177, 0, 0.38) !important;
 }
 
-.activity-option input:checked + .activity-box.orange-level {
-  border-color: #f97316;
-  box-shadow: 0 10px 24px rgba(249, 115, 22, 0.28);
-  transform: translateY(-1px);
+.activity-option input:checked + .orange-level {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 26px rgba(235, 122, 0, 0.38) !important;
 }
 
-.activity-option input:checked + .activity-box.red-level {
-  border-color: #dc2626;
-  box-shadow: 0 10px 24px rgba(220, 38, 38, 0.28);
-  transform: translateY(-1px);
+.activity-option input:checked + .red-level {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 26px rgba(217, 48, 37, 0.38) !important;
 }
 
 .instructions {
