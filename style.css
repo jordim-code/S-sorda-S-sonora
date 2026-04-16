@@ -118,7 +118,6 @@ h1 {
 .activity-box strong {
   display: block;
   margin-bottom: 4px;
-  color: #1e3a8a;
 }
 
 .activity-box span {
@@ -126,10 +125,52 @@ h1 {
   font-size: 0.95rem;
 }
 
-.activity-option input:checked + .activity-box {
-  border-color: #2563eb;
-  background: linear-gradient(180deg, #eef5ff, #f6fbff);
-  box-shadow: 0 8px 22px rgba(37, 99, 235, 0.12);
+.yellow-level {
+  background: linear-gradient(180deg, #fffdf2, #fff8d8);
+  border-color: #f4d03f;
+  box-shadow: 0 8px 18px rgba(244, 208, 63, 0.18);
+}
+
+.yellow-level strong {
+  color: #9a6b00;
+}
+
+.orange-level {
+  background: linear-gradient(180deg, #fff8f1, #ffe3c2);
+  border-color: #f39c12;
+  box-shadow: 0 8px 18px rgba(243, 156, 18, 0.18);
+}
+
+.orange-level strong {
+  color: #b45309;
+}
+
+.red-level {
+  background: linear-gradient(180deg, #fff5f5, #ffd6d6);
+  border-color: #ef4444;
+  box-shadow: 0 8px 18px rgba(239, 68, 68, 0.18);
+}
+
+.red-level strong {
+  color: #b91c1c;
+}
+
+.activity-option input:checked + .activity-box.yellow-level {
+  border-color: #eab308;
+  box-shadow: 0 10px 24px rgba(234, 179, 8, 0.28);
+  transform: translateY(-1px);
+}
+
+.activity-option input:checked + .activity-box.orange-level {
+  border-color: #f97316;
+  box-shadow: 0 10px 24px rgba(249, 115, 22, 0.28);
+  transform: translateY(-1px);
+}
+
+.activity-option input:checked + .activity-box.red-level {
+  border-color: #dc2626;
+  box-shadow: 0 10px 24px rgba(220, 38, 38, 0.28);
+  transform: translateY(-1px);
 }
 
 .instructions {
